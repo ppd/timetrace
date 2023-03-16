@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -304,6 +305,10 @@ func (t *Timetrace) loadAllRecords(date time.Time) ([]*Record, error) {
 		}
 		records = append(records, record)
 	}
+
+	sort.Slice(records, func(i, j int) bool {
+		return records[i].Start.After(records[j].Start)
+	})
 
 	return records, nil
 }
