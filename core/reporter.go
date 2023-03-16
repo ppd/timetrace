@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 )
@@ -103,17 +104,41 @@ func (r *Reporter) sortAndMerge(records []*Record) {
 		tmp := r.totals[key] + record.Duration()
 		r.totals[key] = tmp
 	}
+
+	for _, records := range r.report {
+		sort.Slice(records, func(i int, j int) bool {
+			return strings.Compare(records[i].Project.Key, records[j].Project.Key) < 0
+		})
+	}
+}
+
+type TableOptions struct {
+	ShowBillable bool
+	ShowDate     bool
+}
+
+func (options *TableOptions) CountColumns() int {
+	const numberOfFixedColumns = 4
+	enabled := 0
+	if options.ShowBillable {
+		enabled++
+	}
+	if options.ShowDate {
+		enabled++
+	}
+	return numberOfFixedColumns + enabled
 }
 
 // Table prepares the r.report and r.totals data in a way that it can be consumed by the out.Table
 // It returns a [][]string where each []string represents one record of a project and
 // the total sum of time for all projects
-func (r Reporter) Table() ([][]string, string) {
+func (r Reporter) Table(options TableOptions) ([][]string, string) {
 	var rows = make([][]string, 0)
 	var totalSum time.Duration
 
 	for key, records := range r.report {
 		for _, record := range records {
+
 			keyParts := strings.Split(record.Project.Key, "@")
 			module, key := "", keyParts[0]
 			if len(keyParts) > 1 {
@@ -125,13 +150,28 @@ func (r Reporter) Table() ([][]string, string) {
 				billable = "yes"
 			}
 			date := r.t.Formatter().PrettyDateString(record.Start)
+
+			// fixed columns
 			start := r.t.Formatter().TimeString(record.Start)
 			end := r.t.Formatter().TimeString(*record.End)
+			duration := r.t.Formatter().FormatDuration(record.Duration())
+			tags := r.t.Formatter().FormatTags(record.Tags)
 
-			rows = append(rows, []string{key, module, date, start, end, billable, ""})
+			row := []string{key, module, tags}
+			if options.ShowDate {
+				row = append(row, date)
+			}
+			row = append(row, start, end)
+			if options.ShowBillable {
+				row = append(row, billable)
+			}
+			row = append(row, duration)
+			rows = append(rows, row)
 		}
 		// append with last row for total of tracked time for project
-		rows = append(rows, []string{"", "", "", "", "", defaultTotalSymbol, r.t.Formatter().FormatDuration(r.totals[key])})
+		sumRow := make([]string, options.CountColumns())
+		sumRow = append(sumRow, defaultTotalSymbol, r.t.Formatter().FormatDuration(r.totals[key]))
+		rows = append(rows, sumRow)
 		totalSum += r.totals[key]
 	}
 	return rows, r.t.Formatter().FormatDuration(totalSum)
