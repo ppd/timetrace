@@ -5,6 +5,7 @@ import (
 
 	"github.com/dominikbraun/timetrace/core"
 	"github.com/dominikbraun/timetrace/out"
+	"github.com/dominikbraun/timetrace/plugins/chronos"
 	"github.com/olekukonko/tablewriter"
 
 	"github.com/spf13/cobra"
@@ -90,6 +91,17 @@ func generateReportCommand(t *core.Timetrace) *cobra.Command {
 			// if options.outputFormat is default only table will be
 			// printed to os.Stdout
 			switch options.outputFormat {
+			case "chronos":
+				if startDate != endDate {
+					out.Err("start date must be equal to end date for Chronos report")
+					return
+				}
+				data, err := chronos.ChronosJson(t, report, endDate.Day())
+				if err != nil {
+					out.Err(err.Error())
+					return
+				}
+				t.WriteReport(options.filePath, data)
 			case "json":
 				data, err := report.Json()
 				if err != nil {

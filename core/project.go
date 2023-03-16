@@ -24,7 +24,9 @@ var (
 )
 
 type Project struct {
-	Key string `json:"key"`
+	Key            string `json:"key"`
+	ChronosProject string `json:"chronosProject"`
+	ChronosAccount string `json:"chronosAccount"`
 }
 
 // Parent returns the parent project of the current project or an empty string

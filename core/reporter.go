@@ -83,6 +83,14 @@ type Reporter struct {
 	totals map[string]time.Duration
 }
 
+func (r *Reporter) GetReport() map[string][]*Record {
+	return r.report
+}
+
+func (r *Reporter) GetTotals() map[string]time.Duration {
+	return r.totals
+}
+
 // sortAndMerge assigns each record in the given slice to the correct project key in the
 // Reporter.report map and computes each projects total time.Duration
 // projects with module will be grouped by
