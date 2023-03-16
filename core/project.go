@@ -1,7 +1,6 @@
 package core
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -119,7 +120,7 @@ func (t *Timetrace) SaveProject(project Project, force bool) error {
 		return err
 	}
 
-	bytes, err := json.MarshalIndent(&project, "", "\t")
+	bytes, err := yaml.Marshal(&project)
 	if err != nil {
 		return err
 	}
@@ -143,7 +144,7 @@ func (t *Timetrace) BackupProject(projectKey string) error {
 		return err
 	}
 
-	bytes, err := json.MarshalIndent(&project, "", "\t")
+	bytes, err := yaml.Marshal(&project)
 	if err != nil {
 		return err
 	}
@@ -164,8 +165,8 @@ func (t *Timetrace) RevertProject(projectKey string) error {
 	// get submodules associated with projectKey
 	var submodules []string
 	for _, backup := range backups {
-		if strings.HasSuffix(backup, fmt.Sprintf("@%s.json.bak", projectKey)) {
-			submoduleKey := strings.TrimSuffix(filepath.Base(backup), ".json.bak")
+		if strings.HasSuffix(backup, fmt.Sprintf("@%s.yaml.bak", projectKey)) {
+			submoduleKey := strings.TrimSuffix(filepath.Base(backup), ".yaml.bak")
 			submodules = append(submodules, submoduleKey)
 		}
 	}
@@ -233,7 +234,7 @@ func (t *Timetrace) loadProject(path string) (*Project, error) {
 
 	var project Project
 
-	if err := json.Unmarshal(file, &project); err != nil {
+	if err := yaml.Unmarshal(file, &project); err != nil {
 		return nil, err
 	}
 
@@ -302,7 +303,7 @@ func (t *Timetrace) revert(key string) error {
 		return err
 	}
 
-	bytes, err := json.MarshalIndent(&project, "", "\t")
+	bytes, err := yaml.Marshal(&project)
 	if err != nil {
 		return err
 	}

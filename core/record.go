@@ -1,7 +1,6 @@
 package core
 
 import (
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -9,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -76,7 +77,7 @@ func (t *Timetrace) SaveRecord(record Record, force bool) error {
 		return err
 	}
 
-	bytes, err := json.MarshalIndent(&record, "", "\t")
+	bytes, err := yaml.Marshal(&record)
 	if err != nil {
 		return err
 	}
@@ -101,7 +102,7 @@ func (t *Timetrace) BackupRecord(recordKey time.Time) error {
 		return err
 	}
 
-	bytes, err := json.MarshalIndent(&record, "", "\t")
+	bytes, err := yaml.Marshal(&record)
 	if err != nil {
 		return err
 	}
@@ -124,7 +125,7 @@ func (t *Timetrace) RevertRecord(recordKey time.Time) error {
 		return err
 	}
 
-	bytes, err := json.MarshalIndent(&record, "", "\t")
+	bytes, err := yaml.Marshal(&record)
 	if err != nil {
 		return err
 	}
@@ -486,7 +487,7 @@ func (t *Timetrace) loadRecord(path string) (*Record, error) {
 
 	var record Record
 
-	if err := json.Unmarshal(file, &record); err != nil {
+	if err := yaml.Unmarshal(file, &record); err != nil {
 		return nil, err
 	}
 

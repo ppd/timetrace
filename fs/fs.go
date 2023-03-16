@@ -23,8 +23,8 @@ const (
 
 const (
 	recordDirLayout            = "2006-01-02"
-	recordFilepathLayout       = "15-04.json"
-	recordBackupFilepathLayout = "15-04.json.bak"
+	recordFilepathLayout       = "15-04.yaml"
+	recordBackupFilepathLayout = "15-04.yaml.bak"
 )
 
 type Fs struct {
@@ -42,7 +42,7 @@ func New(config *config.Config) *Fs {
 // ProjectFilepath returns the filepath of the project with the given key.
 func (fs *Fs) ProjectFilepath(key string) string {
 	key = fs.sanitizer.Replace(key)
-	name := fmt.Sprintf("%s.json", key)
+	name := fmt.Sprintf("%s.yaml", key)
 	return filepath.Join(fs.projectsDir(), name)
 }
 
@@ -50,7 +50,7 @@ func (fs *Fs) ProjectFilepath(key string) string {
 // given key.
 func (fs *Fs) ProjectBackupFilepath(key string) string {
 	key = fs.sanitizer.Replace(key)
-	name := fmt.Sprintf("%s.json.bak", key)
+	name := fmt.Sprintf("%s.yaml.bak", key)
 	return filepath.Join(fs.projectsDir(), name)
 }
 
@@ -130,16 +130,16 @@ func (fs *Fs) RecordBackupFilepath(start time.Time) string {
 //
 // The less function allows you to sort the records. Assume three record files:
 //
-//	- timetrace/records/2021-05-01/08-00.json
-//	- timetrace/records/2021-05-01/10-00.json
-//	- timetrace/records/2021-05-01/11-30.json
+//   - timetrace/records/2021-05-01/08-00.yaml
+//   - timetrace/records/2021-05-01/10-00.yaml
+//   - timetrace/records/2021-05-01/11-30.yaml
 //
 // The following call to RecordFilepaths will return the paths of those records
 // sorted from newest to oldest:
 //
 //	latestRecords, err := RecordFilepaths(dir, func (a, b string) bool {
-//		timeA, _ := time.Parse("15-04.json", a)
-//		timeB, _ := time.Parse("15-04.json", b)
+//		timeA, _ := time.Parse("15-04.yaml", a)
+//		timeB, _ := time.Parse("15-04.yaml", b)
 //		return timeA.Before(timeB)
 //	})
 //
