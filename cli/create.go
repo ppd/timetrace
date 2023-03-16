@@ -26,9 +26,10 @@ func createCommand(t *core.Timetrace) *cobra.Command {
 
 func createProjectCommand(t *core.Timetrace) *cobra.Command {
 	createProject := &cobra.Command{
-		Use:   "project <KEY>",
-		Short: "Create a new project",
-		Args:  cobra.ExactArgs(1),
+		Use:       "project <KEY>",
+		Short:     "Create a new project",
+		Args:      cobra.ExactArgs(1),
+		ValidArgs: t.ListProjectNames(),
 		Run: func(cmd *cobra.Command, args []string) {
 			key := args[0]
 
@@ -60,6 +61,10 @@ func createRecordCommand(t *core.Timetrace) *cobra.Command {
 		Use:   usage,
 		Short: "Create a new record",
 		Args:  cobra.ExactArgs(4),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			projectNames := t.ListProjectNames()
+			return projectNames, cobra.ShellCompDirectiveNoFileComp
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			key := args[0]
 			project, err := t.LoadProject(key)

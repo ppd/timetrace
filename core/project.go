@@ -100,6 +100,22 @@ func (t *Timetrace) ListProjects() ([]*Project, error) {
 	return projects, nil
 }
 
+func (t *Timetrace) ListProjectNames() []string {
+	allProjects, err := t.ListProjects()
+
+	if err != nil {
+		allProjects = make([]*Project, 0)
+	}
+
+	projectNames := make([]string, len(allProjects))
+
+	for i, project := range allProjects {
+		projectNames[i] = project.Key
+	}
+
+	return projectNames
+}
+
 // SaveProject persists the given project. Returns ErrProjectAlreadyExists if
 // the project already exists and saving isn't forced.
 func (t *Timetrace) SaveProject(project Project, force bool) error {

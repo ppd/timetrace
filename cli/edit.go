@@ -30,9 +30,10 @@ func editCommand(t *core.Timetrace) *cobra.Command {
 func editProjectCommand(t *core.Timetrace) *cobra.Command {
 	var options editOptions
 	editProject := &cobra.Command{
-		Use:   "project <KEY>",
-		Short: "Edit a project",
-		Args:  cobra.ExactArgs(1),
+		Use:       "project <KEY>",
+		Short:     "Edit a project",
+		Args:      cobra.ExactArgs(1),
+		ValidArgs: t.ListProjectNames(),
 		Run: func(cmd *cobra.Command, args []string) {
 			key := args[0]
 			if options.Revert {

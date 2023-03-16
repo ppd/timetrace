@@ -131,6 +131,10 @@ func listRecordsCommand(t *core.Timetrace) *cobra.Command {
 	listRecords.Flags().StringVarP(&options.projectKeyFilter, "project", "p",
 		"", "filter by project key")
 
+	listRecords.RegisterFlagCompletionFunc("project", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return t.ListProjectNames(), cobra.ShellCompDirectiveNoFileComp
+	})
+
 	return listRecords
 }
 
