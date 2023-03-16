@@ -14,14 +14,18 @@ type Formatter struct {
 
 const dateLayout = "2006-01-02"
 
+func truncateToDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
+
 // ParseDate parses a date from an input string in the form YYYY-MM-DD. It also
 // supports the `today` and `yesterday` aliases for convenience.
 func (f *Formatter) ParseDate(input string) (time.Time, error) {
 	if input == "today" {
-		return time.Now(), nil
+		return truncateToDay(time.Now()), nil
 	}
 	if input == "yesterday" {
-		yesterday := time.Now().AddDate(0, 0, -1)
+		yesterday := truncateToDay(time.Now()).AddDate(0, 0, -1)
 		return yesterday, nil
 	}
 
