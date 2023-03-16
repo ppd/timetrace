@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dominikbraun/timetrace/core"
+	"github.com/dominikbraun/timetrace/interactive"
 	"github.com/dominikbraun/timetrace/out"
 
 	"github.com/spf13/cobra"
@@ -77,8 +78,20 @@ func editRecordCommand(t *core.Timetrace) *cobra.Command {
 	editRecord := &cobra.Command{
 		Use:   "record {<KEY>|latest|@ID}",
 		Short: "Edit a record",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				recordTime, err := interactive.SelectRecord(t)
+				if err != nil {
+					out.Err(err.Error())
+					return
+				}
+				if err := t.EditRecordManual(recordTime); err != nil {
+					out.Err("failed to edit record: %s", err.Error())
+				}
+				return
+			}
+
 			if options.Plus != "" && options.Minus != "" {
 				out.Err("plus and minus flag can not be combined: %s", errors.New("edit not possible"))
 				return
