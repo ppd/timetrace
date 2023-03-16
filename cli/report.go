@@ -18,6 +18,7 @@ type reportOptions struct {
 	filePath      string
 	startTime     string
 	endTime       string
+	day           string
 }
 
 func generateReportCommand(t *core.Timetrace) *cobra.Command {
@@ -45,6 +46,16 @@ func generateReportCommand(t *core.Timetrace) *cobra.Command {
 					out.Err("failed to parse date: %s", formatErr.Error())
 					return
 				}
+			}
+
+			if options.day != "" {
+				day, formatErr := t.Formatter().ParseDate(options.day)
+				if formatErr != nil {
+					out.Err("failed to parse date: %s", formatErr.Error())
+					return
+				}
+				startDate = day
+				endDate = day
 			}
 
 			// set-up filter options based on cmd flags
@@ -122,6 +133,9 @@ func generateReportCommand(t *core.Timetrace) *cobra.Command {
 
 	report.Flags().StringVarP(&options.filePath, "file", "f",
 		"", "file to write report to")
+
+	report.Flags().StringVarP(&options.day, "day", "d",
+		"", "display one specific day")
 
 	return report
 }
