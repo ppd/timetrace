@@ -12,8 +12,9 @@ import (
 
 func listCommand(t *core.Timetrace) *cobra.Command {
 	list := &cobra.Command{
-		Use:   "list",
-		Short: "List all resources",
+		Use:     "list",
+		Short:   "List all resources",
+		Aliases: []string{"l"},
 		Run: func(cmd *cobra.Command, args []string) {
 			_ = cmd.Help()
 		},
@@ -27,8 +28,9 @@ func listCommand(t *core.Timetrace) *cobra.Command {
 
 func listProjectsCommand(t *core.Timetrace) *cobra.Command {
 	listProjects := &cobra.Command{
-		Use:   "projects",
-		Short: "List all projects",
+		Use:     "projects",
+		Short:   "List all projects",
+		Aliases: []string{"p"},
 		Run: func(cmd *cobra.Command, args []string) {
 			allProjects, err := t.ListProjects()
 			if err != nil {
@@ -69,9 +71,10 @@ func listRecordsCommand(t *core.Timetrace) *cobra.Command {
 	var options listRecordsOptions
 
 	listRecords := &cobra.Command{
-		Use:   "records {<YYYY-MM-DD>|today|yesterday}",
-		Short: "List all records from a date",
-		Args:  cobra.ExactArgs(1),
+		Use:     "records {<YYYY-MM-DD>|today|yesterday}",
+		Short:   "List all records from a date",
+		Aliases: []string{"r"},
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			date, err := t.Formatter().ParseDate(args[0])
 			if err != nil {
@@ -141,7 +144,7 @@ func listRecordsCommand(t *core.Timetrace) *cobra.Command {
 func filterBillableRecords(records []*core.Record) []*core.Record {
 	billableRecords := []*core.Record{}
 	for _, record := range records {
-		if record.IsBillable == true {
+		if record.IsBillable {
 			billableRecords = append(billableRecords, record)
 		}
 	}
