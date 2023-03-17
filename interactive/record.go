@@ -17,19 +17,22 @@ func SelectRecord(t *core.Timetrace) (time.Time, error) {
 		return time.Time{}, errors.New("no records to edit")
 	}
 
-	items := make([]string, len(records))
-	for i, record := range records {
+	items := make([]string, 0)
+	for _, record := range records {
+		if record.End == nil {
+			continue
+		}
 		tags := ""
 		if len(record.Tags) > 0 {
 			tags = fmt.Sprintf("(%s)", t.Formatter().FormatTags(record.Tags))
 		}
-		items[i] = fmt.Sprintf(
+		items = append(items, fmt.Sprintf(
 			"%s - %s | %s %s",
 			t.Formatter().TimeString(record.Start),
 			t.Formatter().TimeString(*record.End),
 			record.Project.Key,
 			tags,
-		)
+		))
 	}
 
 	prompt := promptui.Select{
