@@ -251,7 +251,8 @@ func (t *Timetrace) DeleteRecordsByProject(key string) error {
 func (t *Timetrace) EditRecordManual(recordTime time.Time) error {
 	path := t.fs.RecordFilepath(recordTime)
 
-	if _, err := t.loadRecord(path); err != nil {
+	recordBefore, err := t.loadRecord(path)
+	if err != nil {
 		return err
 	}
 
@@ -261,7 +262,28 @@ func (t *Timetrace) EditRecordManual(recordTime time.Time) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	recordAfter, err := t.loadRecord(path)
+	if err != nil {
+		return err
+	}
+
+	if t.fs.RecordFilepath(recordBefore.Start) == t.fs.RecordFilepath(recordAfter.Start) {
+		return nil
+	}
+
+	if err := t.SaveRecord(*recordAfter, true); err != nil {
+		return err
+	}
+
+	if err := os.Remove(path); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // EditRecord loads the record internally, applies the option values and saves the record
