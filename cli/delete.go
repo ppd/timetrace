@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/dominikbraun/timetrace/core"
+	"github.com/dominikbraun/timetrace/interactive"
 	"github.com/dominikbraun/timetrace/out"
 
 	"github.com/spf13/cobra"
@@ -117,12 +119,23 @@ func deleteRecordCommand(t *core.Timetrace) *cobra.Command {
 	deleteRecord := &cobra.Command{
 		Use:   use,
 		Short: "Delete a record",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			start, err := t.Formatter().ParseRecordKey(args[0])
-			if err != nil {
-				out.Err("Failed to parse date argument: %s", err.Error())
-				return
+			var start time.Time
+			var err error
+
+			if len(args) == 0 {
+				start, err = interactive.SelectRecord(t)
+				if err != nil {
+					out.Err(err.Error())
+					return
+				}
+			} else {
+				start, err = t.Formatter().ParseRecordKey(args[0])
+				if err != nil {
+					out.Err("Failed to parse date argument: %s", err.Error())
+					return
+				}
 			}
 
 			if options.Revert {
@@ -157,7 +170,7 @@ func deleteRecordCommand(t *core.Timetrace) *cobra.Command {
 				return
 			}
 
-			out.Success("Deleted record %s", args[0])
+			out.Success("Deleted record")
 		},
 	}
 
