@@ -31,6 +31,21 @@ type Record struct {
 	Tags       []string   `json:"tags"`
 }
 
+func (r *Record) MarshalYAML() (interface{}, error) {
+	oneMinute, _ := time.ParseDuration("1m")
+	tmp := Record{
+		Start:      r.Start.Round(oneMinute),
+		Project:    r.Project,
+		IsBillable: r.IsBillable,
+		Tags:       r.Tags,
+	}
+	if r.End != nil {
+		end := r.End.Round(oneMinute)
+		tmp.End = &end
+	}
+	return tmp, nil
+}
+
 // Duration calculates time duration for a specific record. If the record doesn't
 // have an end time, then it is expected that time is still being tracked, and
 // duration will be counted to a current time since start.
