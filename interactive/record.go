@@ -3,20 +3,14 @@ package interactive
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/dominikbraun/timetrace/core"
 	"github.com/manifoldco/promptui"
 )
 
-func SelectRecord(t *core.Timetrace) (time.Time, error) {
-	today, _ := t.Formatter().ParseDate("today")
-
-	records, _ := t.ListRecords(today)
-	if len(records) == 0 {
-		return time.Time{}, errors.New("no records to edit")
-	}
-
+func FormatRecordsAsListItems(records []*core.Record, timeStringFormatter func(time.Time) string) []string {
 	items := make([]string, 0)
 	for _, record := range records {
 		if record.End == nil {
@@ -24,16 +18,34 @@ func SelectRecord(t *core.Timetrace) (time.Time, error) {
 		}
 		tags := ""
 		if len(record.Tags) > 0 {
-			tags = fmt.Sprintf("(%s)", t.Formatter().FormatTags(record.Tags))
+			tags = fmt.Sprintf("(%s)", strings.Join(record.Tags, ", "))
 		}
 		items = append(items, fmt.Sprintf(
 			"%s - %s | %s %s",
-			t.Formatter().TimeString(record.Start),
-			t.Formatter().TimeString(*record.End),
+			timeStringFormatter(record.Start),
+			timeStringFormatter(*record.End),
 			record.Project.Key,
 			tags,
 		))
 	}
+
+	return items
+}
+
+func SelectRecord(t *core.Timetrace) (time.Time, error) {
+	today, err := t.Formatter().ParseDate("today")
+	if err != nil {
+		return time.Time{}, err
+	}
+	records, err := t.ListRecords(today)
+	if err != nil {
+		return time.Time{}, err
+	}
+	if len(records) == 0 {
+		return time.Time{}, errors.New("no records to edit")
+	}
+
+	items := FormatRecordsAsListItems(records, t.Formatter().TimeString)
 
 	prompt := promptui.Select{
 		Label: "Select record to edit",
@@ -42,7 +54,7 @@ func SelectRecord(t *core.Timetrace) (time.Time, error) {
 	}
 
 	recordIndex, _, _ := prompt.Run()
-	record, _ := t.LoadRecordByID(len(records) - recordIndex)
+	record, _ := t.LoadRecordByID(len(items) - recordIndex)
 	recordTime := record.Start
 
 	return recordTime, nil

@@ -31,21 +31,6 @@ type Record struct {
 	Tags       []string   `json:"tags"`
 }
 
-func (r *Record) MarshalYAML() (interface{}, error) {
-	oneMinute, _ := time.ParseDuration("1m")
-	tmp := Record{
-		Start:      r.Start.Round(oneMinute),
-		Project:    r.Project,
-		IsBillable: r.IsBillable,
-		Tags:       r.Tags,
-	}
-	if r.End != nil {
-		end := r.End.Round(oneMinute)
-		tmp.End = &end
-	}
-	return tmp, nil
-}
-
 // Duration calculates time duration for a specific record. If the record doesn't
 // have an end time, then it is expected that time is still being tracked, and
 // duration will be counted to a current time since start.
@@ -286,18 +271,19 @@ func (t *Timetrace) EditRecordManual(recordTime time.Time) error {
 		return err
 	}
 
+	return t.SyncRecordFilepath(*recordBefore, *recordAfter)
+}
+
+func (t *Timetrace) SyncRecordFilepath(recordBefore Record, recordAfter Record) error {
 	if t.fs.RecordFilepath(recordBefore.Start) == t.fs.RecordFilepath(recordAfter.Start) {
 		return nil
 	}
-
-	if err := t.SaveRecord(*recordAfter, true); err != nil {
+	if err := t.SaveRecord(recordAfter, true); err != nil {
 		return err
 	}
-
-	if err := os.Remove(path); err != nil {
+	if err := os.Remove(t.fs.RecordFilepath(recordBefore.Start)); err != nil {
 		return err
 	}
-
 	return nil
 }
 
