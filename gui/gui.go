@@ -24,7 +24,7 @@ func RunGui(t *core.Timetrace) {
 
 	theState := state.InitState(t)
 	theState.RefreshState()
-	theState.RefreshStatusPeriodically()
+	theState.RefreshStatePeriodically()
 
 	a := app.New()
 	window = a.NewWindow("Timetrace")

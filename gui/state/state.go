@@ -66,7 +66,7 @@ func (s *State) ChangeView(view View) {
 	s.ActiveView.Set(int(view))
 }
 
-func (s *State) UpdateLabels() {
+func (s *State) UpdateRecords() {
 	today, _ := s.T.Formatter().ParseDate("today")
 	records, _ := s.T.ListRecords(today)
 	recordsUntyped := make([]interface{}, 0)
@@ -85,31 +85,39 @@ func (s *State) UpdateProjectLabels() {
 func (s *State) UpdateStatus() {
 	status, _ := s.T.Status()
 	label := "No active project"
-	workedToday := fmt.Sprintf("Worked today: %s", s.T.Formatter().FormatDuration(status.TrackedTimeToday))
+	workedToday := "Worked today: -"
 	isActive := false
-	if status.Current != nil {
+	tags := ""
+	if status != nil {
+		workedToday = fmt.Sprintf("Worked today: %s", s.T.Formatter().FormatDuration(status.TrackedTimeToday))
+	}
+	if status != nil && status.Current != nil {
 		label = fmt.Sprintf(
 			"%s in progress | Current project: %s",
 			status.Current.Project.Key,
 			s.T.Formatter().FormatDuration(status.Current.Duration()),
 		)
 		isActive = true
+		tags = strings.Join(status.Current.Tags, ", ")
 	}
 	s.IsRecordActive.Set(isActive)
 	s.Status.Set(fmt.Sprintf("%s | %s", label, workedToday))
+
+	currentTags, _ := s.Tags.Get()
+	if len(currentTags) == 0 {
+		s.Tags.Set(tags)
+	}
 }
 
 func (s *State) RefreshState() {
-	s.UpdateLabels()
-	s.UpdateProjectLabels()
+	s.UpdateRecords()
 	s.UpdateStatus()
 }
 
 func (s *State) Stop() {
 	s.StoreTags()
 	s.T.Stop()
-	s.UpdateStatus()
-	s.UpdateLabels()
+	s.RefreshState()
 }
 
 func (s *State) StoreTags() {
@@ -122,6 +130,7 @@ func (s *State) StoreTags() {
 	if err := s.T.SaveRecord(*record, true); err != nil {
 		panic("uh oh")
 	}
+	s.Tags.Set("")
 }
 
 func (s *State) StartProject(projectKey string) error {
@@ -175,7 +184,7 @@ func (s *State) GoToMainView() {
 	s.ChangeView(Main)
 }
 
-func (s *State) RefreshStatusPeriodically() func() {
+func (s *State) RefreshStatePeriodically() func() {
 	killMe := false
 
 	go func() {
@@ -183,8 +192,8 @@ func (s *State) RefreshStatusPeriodically() func() {
 			if killMe {
 				return
 			}
-			time.Sleep(time.Minute)
-			s.UpdateStatus()
+			time.Sleep(time.Second * time.Duration(10))
+			s.RefreshState()
 		}
 	}()
 
