@@ -23,6 +23,7 @@ func RunGui(t *core.Timetrace) {
 	})
 
 	theState := state.InitState(t)
+	theState.UpdateProjectLabels()
 	theState.RefreshState()
 	theState.RefreshStatePeriodically()
 
