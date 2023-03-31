@@ -40,6 +40,8 @@ type State struct {
 	RecordToEditTags             binding.String
 	RecordToEditProject          binding.String
 	RecordToEditIsExternalChange bool
+	// refresh trigger - listener is spawned on the main (ui) thread
+	TriggerRefresh binding.Untyped
 }
 
 var theState State
@@ -57,8 +59,12 @@ func InitState(t *core.Timetrace) *State {
 		RecordToEditEnd:     ui.NewBoundTimeWithData(time.Now()),
 		RecordToEditTags:    binding.NewString(),
 		RecordToEditProject: binding.NewString(),
+		TriggerRefresh:      binding.NewUntyped(),
 	}
 	theState.ActiveView.Set(int(Main))
+	theState.TriggerRefresh.AddListener(binding.NewDataListener(func() {
+		theState.RefreshState()
+	}))
 	return &theState
 }
 
@@ -184,22 +190,29 @@ func (s *State) GoToMainView() {
 	s.ChangeView(Main)
 }
 
-func (s *State) RefreshStatePeriodically() func() {
-	killMe := false
+func (s *State) RefreshStatePeriodically() (chan<- bool, <-chan bool) {
+	stop := make(chan bool)
+	done := make(chan bool)
+	i := 0
 
 	go func() {
 		for {
+			killMe := false
+			time.Sleep(time.Second * time.Duration(10))
+			s.TriggerRefresh.Set(i)
+			select {
+			case killMe = <-stop:
+			default:
+				i++
+			}
 			if killMe {
+				done <- true
 				return
 			}
-			time.Sleep(time.Second * time.Duration(10))
-			s.RefreshState()
 		}
 	}()
 
-	return func() {
-		killMe = true
-	}
+	return stop, done
 }
 
 func GetState() *State {
