@@ -56,7 +56,7 @@ func EditRecordView() fyne.CanvasObject {
 						theState.DeleteRecordToEdit()
 					}
 				},
-				fyne.CurrentApp().Driver().AllWindows()[0],
+				theState.MainWindow,
 			)
 		}),
 	)

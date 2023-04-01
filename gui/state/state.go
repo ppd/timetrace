@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
 	"github.com/dominikbraun/timetrace/core"
 	"github.com/dominikbraun/timetrace/gui/shared"
@@ -16,15 +17,20 @@ type View int
 const (
 	Main View = iota
 	EditRecord
+	Projects
+	EditProject
+	About
 )
 
 func (v View) String() string {
-	return []string{"Main", "EditRecord"}[v]
+	return []string{"Main", "EditRecord", "Projects", "EditProject", "About"}[v]
 }
 
 type State struct {
 	// core reference
 	T *core.Timetrace
+	// main window
+	MainWindow fyne.Window
 	// active view
 	ActiveView binding.Int
 	// main view
@@ -33,13 +39,22 @@ type State struct {
 	Status         binding.String
 	IsRecordActive binding.Bool
 	Tags           binding.String
-	// edit
+	// edit record
 	RecordToEdit                 *core.Record
 	RecordToEditStart            ui.TimeBinding
 	RecordToEditEnd              ui.TimeBinding
 	RecordToEditTags             binding.String
 	RecordToEditProject          binding.String
 	RecordToEditIsExternalChange bool
+	// projects
+	ProjectsFilter                 binding.String
+	ProjectsFilterIsExternalChange bool
+	FilteredProjects               binding.StringList
+	// edit project
+	ProjectToEdit               *core.Project
+	ProjectToEditKey            binding.String
+	ProjectToEditChronosProject binding.String
+	ProjectToEditChronosAccount binding.String
 	// refresh trigger - listener is spawned on the main (ui) thread
 	TriggerRefresh binding.Untyped
 }
@@ -48,22 +63,35 @@ var theState State
 
 func InitState(t *core.Timetrace) *State {
 	theState = State{
-		T:                   t,
-		ActiveView:          binding.NewInt(),
-		Records:             binding.NewUntypedList(),
-		ProjectLabels:       binding.BindStringList(&[]string{}),
-		Status:              binding.NewString(),
-		IsRecordActive:      binding.NewBool(),
-		Tags:                binding.NewString(),
-		RecordToEditStart:   ui.NewBoundTimeWithData(time.Now()),
-		RecordToEditEnd:     ui.NewBoundTimeWithData(time.Now()),
-		RecordToEditTags:    binding.NewString(),
-		RecordToEditProject: binding.NewString(),
-		TriggerRefresh:      binding.NewUntyped(),
+		T:                              t,
+		ActiveView:                     binding.NewInt(),
+		Records:                        binding.NewUntypedList(),
+		ProjectLabels:                  binding.BindStringList(&[]string{}),
+		Status:                         binding.NewString(),
+		IsRecordActive:                 binding.NewBool(),
+		Tags:                           binding.NewString(),
+		RecordToEditStart:              ui.NewBoundTimeWithData(time.Now()),
+		RecordToEditEnd:                ui.NewBoundTimeWithData(time.Now()),
+		RecordToEditTags:               binding.NewString(),
+		RecordToEditProject:            binding.NewString(),
+		RecordToEditIsExternalChange:   false,
+		ProjectsFilter:                 binding.NewString(),
+		ProjectsFilterIsExternalChange: false,
+		FilteredProjects:               binding.NewStringList(),
+		ProjectToEditKey:               binding.NewString(),
+		ProjectToEditChronosProject:    binding.NewString(),
+		ProjectToEditChronosAccount:    binding.NewString(),
+		TriggerRefresh:                 binding.NewUntyped(),
 	}
 	theState.ActiveView.Set(int(Main))
 	theState.TriggerRefresh.AddListener(binding.NewDataListener(func() {
 		theState.RefreshState()
+	}))
+	theState.ProjectsFilter.AddListener(binding.NewDataListener(func() {
+		theState.FilterProjectList()
+	}))
+	theState.ProjectLabels.AddListener(binding.NewDataListener(func() {
+		theState.FilterProjectList()
 	}))
 	return &theState
 }
@@ -84,7 +112,7 @@ func (s *State) UpdateRecords() {
 	s.Records.Set(recordsUntyped)
 }
 
-func (s *State) UpdateProjectLabels() {
+func (s *State) UpdateProjects() {
 	s.ProjectLabels.Set(s.T.ListProjectNames())
 }
 
@@ -139,6 +167,13 @@ func (s *State) StoreTags() {
 	s.Tags.Set("")
 }
 
+func (s *State) CreateProject(projectKey string) error {
+	project := core.Project{
+		Key: projectKey,
+	}
+	return s.T.SaveProject(project, false)
+}
+
 func (s *State) StartProject(projectKey string) error {
 	if isActive, _ := s.IsRecordActive.Get(); isActive {
 		return nil
@@ -157,7 +192,7 @@ func (s *State) EditRecord(record *core.Record) {
 	s.RecordToEditEnd.Set(*record.End)
 	s.RecordToEditTags.Set(strings.Join(record.Tags, ", "))
 	s.RecordToEditProject.Set(record.Project.Key)
-	s.ActiveView.Set(int(EditRecord))
+	s.ChangeView(EditRecord)
 }
 
 func (s *State) SaveRecordToEdit() {
@@ -178,6 +213,43 @@ func (s *State) SaveRecordToEdit() {
 	s.GoToMainView()
 }
 
+func (s *State) EditProject(projectKey string) error {
+	project, err := s.T.LoadProject(projectKey)
+	if err != nil {
+		return err
+	}
+	s.ProjectToEdit = project
+	s.ProjectToEditKey.Set(project.Key)
+	s.ProjectToEditChronosProject.Set(project.ChronosProject)
+	s.ProjectToEditChronosAccount.Set(project.ChronosAccount)
+	s.ChangeView(EditProject)
+	return nil
+}
+
+func (s *State) DeleteProjectToEdit() error {
+	if err := s.T.DeleteProject(*s.ProjectToEdit); err != nil {
+		return err
+	}
+	s.GoToProjectsView()
+	return nil
+}
+
+func (s *State) SaveProjectToEdit() error {
+	key, _ := s.ProjectToEditKey.Get()
+	chronosAccount, _ := s.ProjectToEditChronosAccount.Get()
+	chronosProject, _ := s.ProjectToEditChronosProject.Get()
+	project := core.Project{
+		Key:            key,
+		ChronosProject: chronosProject,
+		ChronosAccount: chronosAccount,
+	}
+	if err := s.T.SaveProject(project, true); err != nil {
+		return err
+	}
+	s.GoToProjectsView()
+	return nil
+}
+
 func (s *State) DeleteRecordToEdit() {
 	if err := s.T.DeleteRecord(*s.RecordToEdit); err != nil {
 		panic("uh oh")
@@ -185,9 +257,20 @@ func (s *State) DeleteRecordToEdit() {
 	s.GoToMainView()
 }
 
+func (s *State) GoToProjectsView() {
+	s.UpdateProjects()
+	s.ChangeView(Projects)
+}
+
 func (s *State) GoToMainView() {
 	s.RefreshState()
 	s.ChangeView(Main)
+}
+
+func (s *State) FilterProjectList() {
+	filter, _ := theState.ProjectsFilter.Get()
+	labels, _ := s.ProjectLabels.Get()
+	s.FilteredProjects.Set(shared.FilterByContains(labels, filter))
 }
 
 func (s *State) RefreshStatePeriodically() (chan<- bool, <-chan bool) {

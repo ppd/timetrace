@@ -1,6 +1,6 @@
 module github.com/dominikbraun/timetrace
 
-go 1.15
+go 1.16
 
 require (
 	fyne.io/fyne/v2 v2.3.1

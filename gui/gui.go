@@ -8,7 +8,10 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"github.com/dominikbraun/timetrace/core"
 	"github.com/dominikbraun/timetrace/gui/state"
+	"github.com/dominikbraun/timetrace/gui/views/about"
 	"github.com/dominikbraun/timetrace/gui/views/dashboard"
+	"github.com/dominikbraun/timetrace/gui/views/project"
+	"github.com/dominikbraun/timetrace/gui/views/projects"
 	"github.com/dominikbraun/timetrace/gui/views/record"
 )
 
@@ -23,12 +26,13 @@ func RunGui(t *core.Timetrace) {
 	})
 
 	theState := state.InitState(t)
-	theState.UpdateProjectLabels()
+	theState.UpdateProjects()
 	theState.RefreshState()
 	theState.RefreshStatePeriodically()
 
 	a := app.New()
 	window = a.NewWindow("Timetrace")
+	theState.MainWindow = window
 
 	if desk, ok := a.(desktop.App); ok {
 		m := fyne.NewMenu("Timetrace",
@@ -44,6 +48,9 @@ func RunGui(t *core.Timetrace) {
 	// views
 	dashboardView := dashboard.Dashboard()
 	editRecordView := record.EditRecordView()
+	projectsView := projects.Projects()
+	editProjectView := project.Project()
+	aboutView := about.About()
 
 	// routing
 	theState.ActiveView.AddListener(binding.NewDataListener(func() {
@@ -53,6 +60,12 @@ func RunGui(t *core.Timetrace) {
 			window.SetContent(dashboardView)
 		case state.EditRecord:
 			window.SetContent(editRecordView)
+		case state.Projects:
+			window.SetContent(projectsView)
+		case state.EditProject:
+			window.SetContent(editProjectView)
+		case state.About:
+			window.SetContent(aboutView)
 		}
 	}))
 
