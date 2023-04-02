@@ -5,12 +5,15 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
+	"github.com/dominikbraun/timetrace/gui/state"
 )
 
 type DateEntry struct {
 	BlurrableEntry
 
-	time TimeBinding
+	time state.TimeBinding
 }
 
 func (de *DateEntry) getDateItems() (int, time.Month, int) {
@@ -41,7 +44,7 @@ func (de *DateEntry) syncDateToBinding() {
 	}
 }
 
-func NewDateEntry(theTime TimeBinding) *DateEntry {
+func NewDateEntry(theTime state.TimeBinding) *DateEntry {
 	entry := &DateEntry{
 		time: theTime,
 	}
@@ -50,6 +53,11 @@ func NewDateEntry(theTime TimeBinding) *DateEntry {
 	entry.time.AddListener(binding.NewDataListener(entry.refresh))
 	entry.OnSubmitted = func(s string) { entry.syncDateToBinding() }
 	entry.OnFocusLost = func() { entry.syncDateToBinding() }
+
+	entry.ActionItem = widget.NewButtonWithIcon("", theme.MoreVerticalIcon(), func() {
+		current, _ := theTime.Get()
+		ShowDatePopup(current, func(t time.Time) { entry.time.Set(t) })
+	})
 
 	return entry
 }

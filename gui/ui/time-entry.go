@@ -5,11 +5,12 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2/data/binding"
+	"github.com/dominikbraun/timetrace/gui/state"
 )
 
 type TimeEntry struct {
 	BlurrableEntry
-	time TimeBinding
+	time state.TimeBinding
 }
 
 func (te *TimeEntry) getDateItems() (int, time.Month, int) {
@@ -39,7 +40,7 @@ func (te *TimeEntry) refresh() {
 	te.SetText(fmt.Sprintf("%02d:%02d", hour, minute))
 }
 
-func NewTimeEntry(theTime TimeBinding) *TimeEntry {
+func NewTimeEntry(theTime state.TimeBinding) *TimeEntry {
 	entry := &TimeEntry{
 		time: theTime,
 	}

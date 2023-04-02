@@ -13,6 +13,7 @@ import (
 	"github.com/dominikbraun/timetrace/gui/views/project"
 	"github.com/dominikbraun/timetrace/gui/views/projects"
 	"github.com/dominikbraun/timetrace/gui/views/record"
+	"github.com/dominikbraun/timetrace/gui/views/report"
 )
 
 func RunGui(t *core.Timetrace) {
@@ -51,6 +52,7 @@ func RunGui(t *core.Timetrace) {
 	projectsView := projects.Projects()
 	editProjectView := project.Project()
 	aboutView := about.About()
+	reportView := report.Report()
 
 	// routing
 	theState.ActiveView.AddListener(binding.NewDataListener(func() {
@@ -66,6 +68,8 @@ func RunGui(t *core.Timetrace) {
 			window.SetContent(editProjectView)
 		case state.About:
 			window.SetContent(aboutView)
+		case state.Report:
+			window.SetContent(reportView)
 		}
 	}))
 

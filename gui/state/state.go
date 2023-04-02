@@ -1,6 +1,7 @@
 package state
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"time"
@@ -9,7 +10,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"github.com/dominikbraun/timetrace/core"
 	"github.com/dominikbraun/timetrace/gui/shared"
-	"github.com/dominikbraun/timetrace/gui/ui"
+	"github.com/olekukonko/tablewriter"
 )
 
 type View int
@@ -20,10 +21,11 @@ const (
 	Projects
 	EditProject
 	About
+	Report
 )
 
 func (v View) String() string {
-	return []string{"Main", "EditRecord", "Projects", "EditProject", "About"}[v]
+	return []string{"Main", "EditRecord", "Projects", "EditProject", "About", "Report"}[v]
 }
 
 type State struct {
@@ -34,6 +36,7 @@ type State struct {
 	// active view
 	ActiveView binding.Int
 	// main view
+	Date           TimeBinding
 	Records        binding.UntypedList
 	ProjectLabels  binding.StringList
 	Status         binding.String
@@ -41,8 +44,8 @@ type State struct {
 	Tags           binding.String
 	// edit record
 	RecordToEdit                 *core.Record
-	RecordToEditStart            ui.TimeBinding
-	RecordToEditEnd              ui.TimeBinding
+	RecordToEditStart            TimeBinding
+	RecordToEditEnd              TimeBinding
 	RecordToEditTags             binding.String
 	RecordToEditProject          binding.String
 	RecordToEditIsExternalChange bool
@@ -55,6 +58,8 @@ type State struct {
 	ProjectToEditKey            binding.String
 	ProjectToEditChronosProject binding.String
 	ProjectToEditChronosAccount binding.String
+	// report
+	Report binding.String
 	// refresh trigger - listener is spawned on the main (ui) thread
 	TriggerRefresh binding.Untyped
 }
@@ -62,16 +67,19 @@ type State struct {
 var theState State
 
 func InitState(t *core.Timetrace) *State {
+	today, _ := t.Formatter().ParseDate("today")
+
 	theState = State{
 		T:                              t,
 		ActiveView:                     binding.NewInt(),
+		Date:                           NewBoundTimeWithData(today),
 		Records:                        binding.NewUntypedList(),
 		ProjectLabels:                  binding.BindStringList(&[]string{}),
 		Status:                         binding.NewString(),
 		IsRecordActive:                 binding.NewBool(),
 		Tags:                           binding.NewString(),
-		RecordToEditStart:              ui.NewBoundTimeWithData(time.Now()),
-		RecordToEditEnd:                ui.NewBoundTimeWithData(time.Now()),
+		RecordToEditStart:              NewBoundTimeWithData(time.Now()),
+		RecordToEditEnd:                NewBoundTimeWithData(time.Now()),
 		RecordToEditTags:               binding.NewString(),
 		RecordToEditProject:            binding.NewString(),
 		RecordToEditIsExternalChange:   false,
@@ -81,6 +89,7 @@ func InitState(t *core.Timetrace) *State {
 		ProjectToEditKey:               binding.NewString(),
 		ProjectToEditChronosProject:    binding.NewString(),
 		ProjectToEditChronosAccount:    binding.NewString(),
+		Report:                         binding.NewString(),
 		TriggerRefresh:                 binding.NewUntyped(),
 	}
 	theState.ActiveView.Set(int(Main))
@@ -93,6 +102,9 @@ func InitState(t *core.Timetrace) *State {
 	theState.ProjectLabels.AddListener(binding.NewDataListener(func() {
 		theState.FilterProjectList()
 	}))
+	theState.Date.AddListener(binding.NewDataListener(func() {
+		theState.UpdateRecords()
+	}))
 	return &theState
 }
 
@@ -101,8 +113,8 @@ func (s *State) ChangeView(view View) {
 }
 
 func (s *State) UpdateRecords() {
-	today, _ := s.T.Formatter().ParseDate("today")
-	records, _ := s.T.ListRecords(today)
+	theDate, _ := s.Date.Get()
+	records, _ := s.T.ListRecords(theDate)
 	recordsUntyped := make([]interface{}, 0)
 	for _, record := range records {
 		if record.End != nil {
@@ -296,6 +308,39 @@ func (s *State) RefreshStatePeriodically() (chan<- bool, <-chan bool) {
 	}()
 
 	return stop, done
+}
+
+func (s *State) UpdateReport(theDate time.Time) error {
+	filters := []func(*core.Record) bool{
+		core.FilterNoneNilEndTime,
+		core.FilterByTimeRange(theDate, theDate),
+	}
+
+	report, err := s.T.Report(filters...)
+	if err != nil {
+		return err
+	}
+
+	projects, total := report.Table(core.TableOptions{ShowBillable: false, ShowDate: false})
+
+	if len(projects) == 0 {
+		s.Report.Set("Nothing to report for that day :)")
+		return nil
+	}
+
+	buffer := &bytes.Buffer{}
+	headers := []string{"Project", "Module", "Tags", "Start", "End", "Total"}
+	table := tablewriter.NewWriter(buffer)
+	table.SetHeader(headers)
+	table.SetFooter([]string{"", "", "", "", "TOTAL", total})
+	table.SetRowLine(true)
+	table.SetAutoMergeCellsByColumnIndex([]int{0})
+	table.AppendBulk(projects)
+	table.Render()
+
+	s.Report.Set(buffer.String())
+
+	return nil
 }
 
 func GetState() *State {
