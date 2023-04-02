@@ -27,7 +27,7 @@ func (s *reportState) UpdateReport(theDate time.Time) error {
 		core.FilterByTimeRange(theDate, theDate),
 	}
 
-	report, err := GetTimetrace().Report(filters...)
+	report, err := Timetrace().Report(filters...)
 	if err != nil {
 		return err
 	}

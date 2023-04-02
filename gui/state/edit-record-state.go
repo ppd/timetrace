@@ -49,17 +49,17 @@ func (s *editRecordState) SaveRecordToEdit() {
 	recordAfter.Project.Key, _ = s.Project.Get()
 	tags, _ := s.Tags.Get()
 	recordAfter.Tags = shared.SplitAndTrim(tags)
-	if err := GetTimetrace().SaveRecord(recordAfter, true); err != nil {
+	if err := Timetrace().SaveRecord(recordAfter, true); err != nil {
 		panic("uh oh")
 	}
-	if err := GetTimetrace().SyncRecordFilepath(*recordBefore, recordAfter); err != nil {
+	if err := Timetrace().SyncRecordFilepath(*recordBefore, recordAfter); err != nil {
 		panic("uh oh")
 	}
 	DashboardState().GoToDashboard()
 }
 
 func (s *editRecordState) DeleteRecordToEdit() {
-	if err := GetTimetrace().DeleteRecord(*s.Record); err != nil {
+	if err := Timetrace().DeleteRecord(*s.Record); err != nil {
 		panic("uh oh")
 	}
 	DashboardState().GoToDashboard()

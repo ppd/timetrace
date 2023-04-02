@@ -23,7 +23,7 @@ func EditProjectState() *editProjectState {
 }
 
 func (s *editProjectState) DoEdit(projectKey string) error {
-	project, err := GetTimetrace().LoadProject(projectKey)
+	project, err := Timetrace().LoadProject(projectKey)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func (s *editProjectState) DoEdit(projectKey string) error {
 }
 
 func (s *editProjectState) DeleteProjectToEdit() error {
-	if err := GetTimetrace().DeleteProject(*s.Project); err != nil {
+	if err := Timetrace().DeleteProject(*s.Project); err != nil {
 		return err
 	}
 	CoreState().GoToProjectsView()
@@ -52,7 +52,7 @@ func (s *editProjectState) SaveProjectToEdit() error {
 		ChronosProject: chronosProject,
 		ChronosAccount: chronosAccount,
 	}
-	if err := GetTimetrace().SaveProject(project, true); err != nil {
+	if err := Timetrace().SaveProject(project, true); err != nil {
 		return err
 	}
 	CoreState().GoToProjectsView()

@@ -25,7 +25,7 @@ var theDashboardState *dashboardState
 
 func InitDashboardState() *dashboardState {
 	theDashboardState = &dashboardState{
-		Date:           NewBoundTimeWithData(GetToday()),
+		Date:           NewBoundTimeWithData(Today()),
 		Records:        binding.NewUntypedList(),
 		Status:         binding.NewString(),
 		IsRecordActive: binding.NewBool(),
@@ -53,7 +53,7 @@ func DashboardState() *dashboardState {
 
 func (s *dashboardState) UpdateRecords() {
 	theDate, _ := s.Date.Get()
-	records, _ := GetTimetrace().ListRecords(theDate)
+	records, _ := Timetrace().ListRecords(theDate)
 	recordsUntyped := make([]interface{}, 0)
 	for _, record := range records {
 		if record.End != nil {
@@ -64,19 +64,19 @@ func (s *dashboardState) UpdateRecords() {
 }
 
 func (s *dashboardState) UpdateStatus() {
-	status, _ := GetTimetrace().Status()
+	status, _ := Timetrace().Status()
 	label := "No active project"
 	workedToday := "Worked today: -"
 	isActive := false
 	tags := ""
 	if status != nil {
-		workedToday = fmt.Sprintf("Worked today: %s", GetTimetrace().Formatter().FormatDuration(status.TrackedTimeToday))
+		workedToday = fmt.Sprintf("Worked today: %s", Timetrace().Formatter().FormatDuration(status.TrackedTimeToday))
 	}
 	if status != nil && status.Current != nil {
 		label = fmt.Sprintf(
 			"%s in progress | Current project: %s",
 			status.Current.Project.Key,
-			GetTimetrace().Formatter().FormatDuration(status.Current.Duration()),
+			Timetrace().Formatter().FormatDuration(status.Current.Duration()),
 		)
 		isActive = true
 		tags = strings.Join(status.Current.Tags, ", ")
@@ -91,18 +91,18 @@ func (s *dashboardState) UpdateStatus() {
 }
 func (s *dashboardState) Stop() {
 	s.StoreTags()
-	GetTimetrace().Stop()
+	Timetrace().Stop()
 	s.RefreshState()
 }
 
 func (s *dashboardState) StoreTags() {
-	record, err := GetTimetrace().LoadLatestRecord()
+	record, err := Timetrace().LoadLatestRecord()
 	if err != nil {
 		panic("uh oh")
 	}
 	tags, _ := s.Tags.Get()
 	record.Tags = shared.SplitAndTrim(tags)
-	if err := GetTimetrace().SaveRecord(*record, true); err != nil {
+	if err := Timetrace().SaveRecord(*record, true); err != nil {
 		panic("uh oh")
 	}
 	s.Tags.Set("")
@@ -112,14 +112,14 @@ func (s *dashboardState) CreateProject(projectKey string) error {
 	project := core.Project{
 		Key: projectKey,
 	}
-	return GetTimetrace().SaveProject(project, false)
+	return Timetrace().SaveProject(project, false)
 }
 
 func (s *dashboardState) StartProject(projectKey string) error {
 	if isActive, _ := s.IsRecordActive.Get(); isActive {
 		return nil
 	}
-	if err := GetTimetrace().Start(projectKey, true, []string{}); err != nil {
+	if err := Timetrace().Start(projectKey, true, []string{}); err != nil {
 		return err
 	}
 	s.UpdateStatus()

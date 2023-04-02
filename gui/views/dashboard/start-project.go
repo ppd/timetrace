@@ -20,7 +20,7 @@ func StartProject() fyne.CanvasObject {
 	entry := fwidget.NewCompletionEntry([]string{})
 
 	doesProjectExist := func() bool {
-		if _, err := state.GetTimetrace().LoadProject(entry.Text); err != nil {
+		if _, err := state.Timetrace().LoadProject(entry.Text); err != nil {
 			return false
 		} else {
 			return true

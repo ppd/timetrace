@@ -43,12 +43,12 @@ func (s *coreState) ChangeView(view View) {
 	s.ActiveView.Set(int(view))
 }
 
-func GetToday() time.Time {
-	today, _ := GetTimetrace().Formatter().ParseDate("today")
+func Today() time.Time {
+	today, _ := Timetrace().Formatter().ParseDate("today")
 	return today
 }
 
-func GetTimetrace() *core.Timetrace {
+func Timetrace() *core.Timetrace {
 	return CoreState().T
 }
 
@@ -62,7 +62,7 @@ func CoreState() *coreState {
 }
 
 func (s *coreState) UpdateProjects() {
-	s.ProjectLabels.Set(GetTimetrace().ListProjectNames())
+	s.ProjectLabels.Set(Timetrace().ListProjectNames())
 }
 
 func (s *coreState) GoToProjectsView() {
