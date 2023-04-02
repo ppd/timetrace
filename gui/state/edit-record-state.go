@@ -25,7 +25,7 @@ func (s *editRecordState) EditRecord(record *core.Record) {
 	s.End.Set(*record.End)
 	s.Tags.Set(strings.Join(record.Tags, ", "))
 	s.Project.Set(record.Project.Key)
-	CoreState().ChangeView(EditProject)
+	CoreState().ChangeView(EditRecord)
 }
 
 var theEditRecordState = &editRecordState{
