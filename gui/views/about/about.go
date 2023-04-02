@@ -17,10 +17,8 @@ import (
 var version string
 
 func About() fyne.CanvasObject {
-	theState := state.GetState()
-
 	backButton := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
-		theState.GoToMainView()
+		state.DashboardState().GoToDashboard()
 	})
 
 	image := canvas.NewImageFromResource(resourceTimetraceCobraJpg)

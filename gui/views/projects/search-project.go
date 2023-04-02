@@ -7,7 +7,7 @@ import (
 )
 
 func searchProject() fyne.CanvasObject {
-	theState := state.GetState()
+	theState := state.ProjectsState()
 
 	entry := widget.NewEntryWithData(theState.ProjectsFilter)
 

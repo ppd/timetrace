@@ -11,18 +11,18 @@ import (
 )
 
 func Project() fyne.CanvasObject {
-	theState := state.GetState()
+	theState := state.EditProjectState()
 
-	keyEntry := widget.NewEntryWithData(theState.ProjectToEditKey)
-	chronosAccountEntry := widget.NewEntryWithData(theState.ProjectToEditChronosAccount)
-	chronosProjectEntry := widget.NewEntryWithData(theState.ProjectToEditChronosProject)
+	keyEntry := widget.NewEntryWithData(theState.Key)
+	chronosAccountEntry := widget.NewEntryWithData(theState.ChronosAccount)
+	chronosProjectEntry := widget.NewEntryWithData(theState.ChronosProject)
 
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ConfirmIcon(), func() {
 			theState.SaveProjectToEdit()
 		}),
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {
-			theState.EditProject(theState.ProjectToEdit.Key)
+			theState.DoEdit(theState.Project.Key)
 		}),
 		widget.NewToolbarSpacer(),
 		widget.NewToolbarAction(theme.DeleteIcon(), func() {
@@ -32,11 +32,11 @@ func Project() fyne.CanvasObject {
 				func(yes bool) {
 					if yes {
 						if err := theState.DeleteProjectToEdit(); err != nil {
-							dialog.ShowError(err, theState.MainWindow)
+							dialog.ShowError(err, state.CoreState().MainWindow)
 						}
 					}
 				},
-				theState.MainWindow,
+				state.CoreState().MainWindow,
 			)
 		}),
 	)

@@ -10,7 +10,7 @@ import (
 )
 
 func Status() fyne.CanvasObject {
-	theState := state.GetState()
+	theState := state.DashboardState()
 	onStopped := func() {
 		theState.Stop()
 	}

@@ -26,14 +26,12 @@ func RunGui(t *core.Timetrace) {
 		window.Show()
 	})
 
-	theState := state.InitState(t)
+	theState := state.InitCoreState(t)
 	theState.UpdateProjects()
-	theState.RefreshState()
-	theState.RefreshStatePeriodically()
 
 	a := app.New()
 	window = a.NewWindow("Timetrace")
-	theState.MainWindow = window
+	state.CoreState().MainWindow = window
 
 	if desk, ok := a.(desktop.App); ok {
 		m := fyne.NewMenu("Timetrace",

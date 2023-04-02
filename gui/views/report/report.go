@@ -11,13 +11,13 @@ import (
 )
 
 func Report() fyne.CanvasObject {
-	theState := state.GetState()
+	theState := state.ReportState()
 
 	backButton := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
-		theState.GoToMainView()
+		state.DashboardState().GoToDashboard()
 	})
 
-	currentDate, _ := theState.Date.Get()
+	currentDate, _ := state.DashboardState().Date.Get()
 	theDate := state.NewBoundTimeWithData(currentDate)
 	dateEntry := ui.NewDateEntry(theDate)
 

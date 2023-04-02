@@ -31,7 +31,7 @@ func formatRecordLabel(record core.Record) string {
 }
 
 func RecordList() fyne.CanvasObject {
-	theState := state.GetState()
+	theState := state.DashboardState()
 	list := widget.NewListWithData(
 		theState.Records,
 		func() fyne.CanvasObject {
@@ -42,7 +42,7 @@ func RecordList() fyne.CanvasObject {
 			record := recordUntyped.(*core.Record)
 			o.(*widget.Button).SetText(formatRecordLabel(*record))
 			o.(*widget.Button).OnTapped = func() {
-				theState.EditRecord(record)
+				state.EditRecordState().EditRecord(record)
 			}
 		},
 	)

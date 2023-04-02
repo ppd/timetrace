@@ -8,7 +8,7 @@ import (
 )
 
 func Tags() fyne.CanvasObject {
-	theState := state.GetState()
+	theState := state.DashboardState()
 	tags := widget.NewEntryWithData(theState.Tags)
 	tags.SetPlaceHolder("Tags for active project")
 	tags.Hide()

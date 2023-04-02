@@ -12,23 +12,25 @@ import (
 )
 
 func Dashboard() fyne.CanvasObject {
+	state.DashboardState().RefreshStatePeriodically()
+
 	projectButton := widget.NewButtonWithIcon("", theme.ListIcon(), func() {
-		state.GetState().GoToProjectsView()
+		state.CoreState().GoToProjectsView()
 	})
 
 	aboutButton := widget.NewButtonWithIcon("", theme.InfoIcon(), func() {
-		state.GetState().ChangeView(state.About)
+		state.CoreState().ChangeView(state.About)
 	})
 
 	calendarButton := widget.NewButtonWithIcon("", theme.MoreVerticalIcon(), func() {
-		currentDate, _ := state.GetState().Date.Get()
+		currentDate, _ := state.DashboardState().Date.Get()
 		ui.ShowDatePopup(currentDate, func(t time.Time) {
-			state.GetState().Date.Set(t)
+			state.DashboardState().Date.Set(t)
 		})
 	})
 
 	reportButton := widget.NewButtonWithIcon("", theme.DocumentIcon(), func() {
-		state.GetState().ChangeView(state.Report)
+		state.CoreState().ChangeView(state.Report)
 	})
 
 	content := container.NewBorder(

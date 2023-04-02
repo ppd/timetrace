@@ -18,9 +18,8 @@ func ShowDatePopup(initialDate time.Time, cb func(time.Time)) {
 	})
 
 	todayButton := widget.NewButton("Today", func() {
-		today, _ := state.GetState().T.Formatter().ParseDate("today")
 		calendarPopup.Hide()
-		cb(today)
+		cb(state.GetToday())
 	})
 
 	calendarPopup = widget.NewModalPopUp(
@@ -31,7 +30,7 @@ func ShowDatePopup(initialDate time.Time, cb func(time.Time)) {
 			nil,
 			calendar,
 		),
-		state.GetState().MainWindow.Canvas(),
+		state.CoreState().MainWindow.Canvas(),
 	)
 	calendarPopup.Show()
 }

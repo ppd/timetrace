@@ -14,13 +14,13 @@ import (
 )
 
 func StartProject() fyne.CanvasObject {
-	state := state.GetState()
-	projectLabels, _ := state.ProjectLabels.Get()
+	theState := state.DashboardState()
+	projectLabels, _ := state.CoreState().ProjectLabels.Get()
 
 	entry := fwidget.NewCompletionEntry([]string{})
 
 	doesProjectExist := func() bool {
-		if _, err := state.T.LoadProject(entry.Text); err != nil {
+		if _, err := state.GetTimetrace().LoadProject(entry.Text); err != nil {
 			return false
 		} else {
 			return true
@@ -28,8 +28,8 @@ func StartProject() fyne.CanvasObject {
 	}
 
 	startTheProject := func(projectKey string) {
-		if err := state.StartProject(projectKey); err != nil {
-			dialog.ShowError(err, state.MainWindow)
+		if err := theState.StartProject(projectKey); err != nil {
+			dialog.ShowError(err, state.CoreState().MainWindow)
 			entry.SetText("")
 		}
 	}
@@ -41,14 +41,14 @@ func StartProject() fyne.CanvasObject {
 			fmt.Sprintf("Do you want to create the new project '%s'?", projectKey),
 			func(createNew bool) {
 				if createNew {
-					if err := state.CreateProject(projectKey); err != nil {
-						dialog.ShowError(err, state.MainWindow)
+					if err := theState.CreateProject(projectKey); err != nil {
+						dialog.ShowError(err, state.CoreState().MainWindow)
 					} else {
 						startTheProject(projectKey)
 					}
 				}
 			},
-			state.MainWindow,
+			state.CoreState().MainWindow,
 		)
 		return true
 	}
@@ -85,14 +85,14 @@ func StartProject() fyne.CanvasObject {
 	entry.OnSubmitted = func(s string) { startOrCreateProject() }
 
 	syncEnabled := func() {
-		isActive, _ := state.IsRecordActive.Get()
+		isActive, _ := theState.IsRecordActive.Get()
 		if isActive {
 			entry.Disable()
 		} else {
 			entry.Enable()
 		}
 	}
-	state.IsRecordActive.AddListener(
+	theState.IsRecordActive.AddListener(
 		binding.NewDataListener(syncEnabled),
 	)
 

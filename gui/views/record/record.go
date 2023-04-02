@@ -14,14 +14,14 @@ import (
 )
 
 func EditRecordView() fyne.CanvasObject {
-	theState := state.GetState()
+	theState := state.EditRecordState()
 
-	startTimeEntry := ui.NewTimeEntry(theState.RecordToEditStart)
-	endTimeEntry := ui.NewTimeEntry(theState.RecordToEditEnd)
-	tagsEntry := widget.NewEntryWithData(theState.RecordToEditTags)
+	startTimeEntry := ui.NewTimeEntry(theState.Start)
+	endTimeEntry := ui.NewTimeEntry(theState.End)
+	tagsEntry := widget.NewEntryWithData(theState.Tags)
 
 	projectEntry := fwidget.NewCompletionEntry([]string{})
-	projectEntry.Bind(theState.RecordToEditProject)
+	projectEntry.Bind(theState.Project)
 
 	boundOnChanged := projectEntry.OnChanged
 	projectEntry.OnChanged = func(s string) {
@@ -30,13 +30,13 @@ func EditRecordView() fyne.CanvasObject {
 			projectEntry.HideCompletion()
 			return
 		}
-		projectLabels, _ := theState.ProjectLabels.Get()
+		projectLabels, _ := state.CoreState().ProjectLabels.Get()
 		options := shared.FilterByContains(projectLabels, projectEntry.Text)
 		projectEntry.SetOptions(options)
-		if fyne.CurrentApp().Driver().CanvasForObject(projectEntry) != nil && !theState.RecordToEditIsExternalChange {
+		if fyne.CurrentApp().Driver().CanvasForObject(projectEntry) != nil && !theState.IsExternalChange {
 			projectEntry.ShowCompletion()
 		}
-		theState.RecordToEditIsExternalChange = false
+		theState.IsExternalChange = false
 	}
 
 	toolbar := widget.NewToolbar(
@@ -44,7 +44,7 @@ func EditRecordView() fyne.CanvasObject {
 			theState.SaveRecordToEdit()
 		}),
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {
-			theState.EditRecord(theState.RecordToEdit)
+			theState.EditRecord(theState.Record)
 		}),
 		widget.NewToolbarSpacer(),
 		widget.NewToolbarAction(theme.DeleteIcon(), func() {
@@ -56,7 +56,7 @@ func EditRecordView() fyne.CanvasObject {
 						theState.DeleteRecordToEdit()
 					}
 				},
-				theState.MainWindow,
+				state.CoreState().MainWindow,
 			)
 		}),
 	)

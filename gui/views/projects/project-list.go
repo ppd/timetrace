@@ -9,7 +9,7 @@ import (
 )
 
 func projectList() fyne.CanvasObject {
-	theState := state.GetState()
+	theState := state.ProjectsState()
 
 	list := widget.NewListWithData(
 		theState.FilteredProjects,
@@ -20,8 +20,8 @@ func projectList() fyne.CanvasObject {
 			projectLabel, _ := i.(binding.String).Get()
 			o.(*widget.Button).SetText(projectLabel)
 			o.(*widget.Button).OnTapped = func() {
-				if err := theState.EditProject(projectLabel); err != nil {
-					dialog.ShowError(err, theState.MainWindow)
+				if err := state.EditProjectState().DoEdit(projectLabel); err != nil {
+					dialog.ShowError(err, state.CoreState().MainWindow)
 				}
 			}
 		},
