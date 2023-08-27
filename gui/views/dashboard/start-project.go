@@ -15,7 +15,6 @@ import (
 
 func StartProject() fyne.CanvasObject {
 	theState := state.DashboardState()
-	projectLabels, _ := state.CoreState().ProjectLabels.Get()
 
 	entry := fwidget.NewCompletionEntry([]string{})
 
@@ -44,6 +43,7 @@ func StartProject() fyne.CanvasObject {
 					if err := theState.CreateProject(projectKey); err != nil {
 						dialog.ShowError(err, state.CoreState().MainWindow)
 					} else {
+						state.CoreState().UpdateProjects()
 						startTheProject(projectKey)
 					}
 				}
@@ -72,6 +72,7 @@ func StartProject() fyne.CanvasObject {
 			entry.HideCompletion()
 			return
 		}
+		projectLabels, _ := state.CoreState().ProjectLabels.Get()
 		options := shared.FilterByContains(projectLabels, entry.Text)
 		if len(options) == 0 {
 			entry.ActionItem.(*widget.Button).Icon = theme.ContentAddIcon()
@@ -81,6 +82,16 @@ func StartProject() fyne.CanvasObject {
 		entry.ActionItem.Refresh()
 		entry.SetOptions(options)
 		entry.ShowCompletion()
+	}
+
+	entry.CustomUpdate = func(i widget.ListItemID, o fyne.CanvasObject) {
+		options := entry.Options
+
+		if i >= len(options) {
+			return
+		}
+
+		o.(*widget.Label).SetText(options[i])
 	}
 
 	entry.OnSubmitted = func(s string) { startOrCreateProject() }

@@ -3,9 +3,10 @@ module github.com/dominikbraun/timetrace
 go 1.16
 
 require (
-	fyne.io/fyne/v2 v2.3.1
-	fyne.io/x/fyne v0.0.0-20230128220048-43a1c4cd1ed8 // indirect
+	fyne.io/fyne/v2 v2.3.5
+	fyne.io/x/fyne v0.0.0-20230717140956-ad10f343f15e // indirect
 	github.com/Kodeworks/golang-image-ico v0.0.0-20141118225523-73f0f4cfade9 // indirect
+	github.com/benoitkugler/textlayout v0.3.0 // indirect
 	github.com/enescakir/emoji v1.0.0
 	github.com/fatih/color v1.15.0
 	github.com/fyne-io/mobile v0.1.2 // indirect
