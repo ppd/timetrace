@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
+	fynexTheme "fyne.io/x/fyne/theme"
 	"github.com/dominikbraun/timetrace/core"
 	"github.com/dominikbraun/timetrace/gui/state"
 	"github.com/dominikbraun/timetrace/gui/views/about"
@@ -30,6 +31,7 @@ func RunGui(t *core.Timetrace) {
 	theState.UpdateProjects()
 
 	a := app.New()
+	a.Settings().SetTheme(fynexTheme.AdwaitaTheme())
 	window = a.NewWindow("Timetrace")
 	state.CoreState().MainWindow = window
 
