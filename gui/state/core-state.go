@@ -17,6 +17,7 @@ const (
 	EditProject
 	About
 	Report
+	None
 )
 
 func (v View) String() string {
@@ -30,16 +31,23 @@ type coreState struct {
 	MainWindow fyne.Window
 	// active view
 	ActiveView binding.Int
+	// requested view
+	RequestedView binding.Int
 	// entities
 	ProjectLabels binding.StringList
 }
 
 var theCoreState = &coreState{
 	ActiveView:    binding.NewInt(),
+	RequestedView: binding.NewInt(),
 	ProjectLabels: binding.NewStringList(),
 }
 
 func (s *coreState) ChangeView(view View) {
+	s.RequestedView.Set(int(view))
+}
+
+func (s *coreState) SetActiveView(view View) {
 	s.ActiveView.Set(int(view))
 }
 
@@ -54,6 +62,7 @@ func Timetrace() *core.Timetrace {
 
 func InitCoreState(t *core.Timetrace) *coreState {
 	theCoreState.T = t
+	theCoreState.SetActiveView(None)
 	return theCoreState
 }
 

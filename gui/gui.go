@@ -53,9 +53,9 @@ func RunGui(t *core.Timetrace) {
 	reportView := report.Report()
 
 	// routing
-	theState.ActiveView.AddListener(binding.NewDataListener(func() {
-		activeView, _ := theState.ActiveView.Get()
-		switch state.View(activeView) {
+	theState.RequestedView.AddListener(binding.NewDataListener(func() {
+		requestedView, _ := theState.RequestedView.Get()
+		switch state.View(requestedView) {
 		case state.Main:
 			window.SetContent(dashboardView)
 		case state.EditRecord:
@@ -69,6 +69,7 @@ func RunGui(t *core.Timetrace) {
 		case state.Report:
 			window.SetContent(reportView)
 		}
+		theState.SetActiveView(state.View(requestedView))
 	}))
 
 	window.SetCloseIntercept(func() {

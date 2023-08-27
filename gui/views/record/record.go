@@ -33,7 +33,7 @@ func EditRecordView() fyne.CanvasObject {
 		projectLabels, _ := state.CoreState().ProjectLabels.Get()
 		options := shared.FilterByContains(projectLabels, projectEntry.Text)
 		projectEntry.SetOptions(options)
-		if fyne.CurrentApp().Driver().CanvasForObject(projectEntry) != nil && !theState.IsExternalChange {
+		if !theState.IsExternalChange {
 			projectEntry.ShowCompletion()
 		}
 		theState.IsExternalChange = false

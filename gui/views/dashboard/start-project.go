@@ -54,6 +54,9 @@ func StartProject() fyne.CanvasObject {
 	}
 
 	startOrCreateProject := func() {
+		if len(entry.Text) == 0 {
+			return
+		}
 		if doesProjectExist() {
 			startTheProject(entry.Text)
 		} else {
@@ -77,9 +80,7 @@ func StartProject() fyne.CanvasObject {
 		}
 		entry.ActionItem.Refresh()
 		entry.SetOptions(options)
-		if fyne.CurrentApp().Driver().CanvasForObject(entry) != nil {
-			entry.ShowCompletion()
-		}
+		entry.ShowCompletion()
 	}
 
 	entry.OnSubmitted = func(s string) { startOrCreateProject() }
@@ -95,6 +96,13 @@ func StartProject() fyne.CanvasObject {
 	theState.IsRecordActive.AddListener(
 		binding.NewDataListener(syncEnabled),
 	)
+
+	state.CoreState().ActiveView.AddListener(binding.NewDataListener(func() {
+		activeView, _ := state.CoreState().ActiveView.Get()
+		if activeView == int(state.Main) {
+			state.CoreState().MainWindow.Canvas().Focus(entry)
+		}
+	}))
 
 	return entry
 }
