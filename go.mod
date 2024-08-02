@@ -3,17 +3,14 @@ module github.com/dominikbraun/timetrace
 go 1.16
 
 require (
-	fyne.io/fyne/v2 v2.3.5
-	fyne.io/x/fyne v0.0.0-20230717140956-ad10f343f15e // indirect
-	github.com/Kodeworks/golang-image-ico v0.0.0-20141118225523-73f0f4cfade9 // indirect
-	github.com/benoitkugler/textlayout v0.3.0 // indirect
+	fyne.io/fyne/v2 v2.5.0
+	fyne.io/x/fyne v0.0.0-20240421102438-d5a080914907
 	github.com/enescakir/emoji v1.0.0
-	github.com/fatih/color v1.15.0
-	github.com/fyne-io/mobile v0.1.2 // indirect
-	github.com/jackmordaunt/icns v0.0.0-20181231085925-4f16af745526 // indirect
+	github.com/fatih/color v1.17.0
+	github.com/goki/freetype v0.0.0-20220119013949-7a161fd3728c // indirect
 	github.com/manifoldco/promptui v0.9.0
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/spf13/cobra v1.6.1
-	github.com/spf13/viper v1.15.0
+	github.com/spf13/cobra v1.8.1
+	github.com/spf13/viper v1.19.0
 	gopkg.in/yaml.v3 v3.0.1
 )

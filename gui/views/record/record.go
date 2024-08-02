@@ -23,9 +23,7 @@ func EditRecordView() fyne.CanvasObject {
 	projectEntry := fwidget.NewCompletionEntry([]string{})
 	projectEntry.Bind(theState.Project)
 
-	boundOnChanged := projectEntry.OnChanged
 	projectEntry.OnChanged = func(s string) {
-		boundOnChanged(s)
 		if len(s) < 2 {
 			projectEntry.HideCompletion()
 			return
